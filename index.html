@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DMIT Analysis Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.9);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+        .scanner-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .fingerprint-animation {
+            width: 200px;
+            height: 200px;
+            background: #4CAF50;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Loading Animation -->
+    <div class="loading">
+        <div class="flex flex-col items-center">
+            <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500"></div>
+            <p class="mt-4 text-gray-600">Processing...</p>
+        </div>
+    </div>
+
+    <!-- Fingerprint Scanner Overlay -->
+    <div class="scanner-overlay">
+        <div class="text-center">
+            <div class="fingerprint-animation">
+                <i class="bi bi-fingerprint text-white text-7xl"></i>
+            </div>
+            <p class="text-white mt-4 text-xl">Place your finger on the scanner</p>
+            <button onclick="closeScanner()" class="mt-4 px-4 py-2 bg-white text-gray-800 rounded">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Main Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-xl font-bold text-blue-600">DMIT Analysis</span>
+                </div>
+                <div id="userSection" class="flex items-center space-x-4">
+                    <button onclick="showLoginModal()" id="loginBtn" class="bg-blue-500 text-white px-4 py-2 rounded">Login</button>
+                    <button onclick="showRegisterModal()" id="registerBtn" class="bg-green-500 text-white px-4 py-2 rounded">Register</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div id="welcomeSection" class="text-center py-12">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">Welcome to DMIT Analysis Platform</h1>
+            <p class="text-gray-600 mb-8">Discover your multiple intelligences through dermatoglyphics analysis</p>
+            <button onclick="startScan()" class="bg-blue-500 text-white px-6 py-3 rounded-lg text-lg hover:bg-blue-600 transition">
+                Start Analysis
+            </button>
+        </div>
+
+        <div id="resultSection" class="hidden">
+            <!-- Results will be populated here -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <h2 class="text-2xl font-bold mb-4">Your Intelligence Profile</h2>
+                <canvas id="intelligenceChart" class="w-full max-w-2xl mx-auto"></canvas>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-xl font-bold mb-4">Career Recommendations</h3>
+                    <div id="careerRecommendations" class="space-y-2">
+                        <!-- Career recommendations will be populated here -->
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-xl font-bold mb-4">Learning Style</h3>
+                    <div id="learningStyle" class="space-y-2">
+                        <!-- Learning style information will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 text-center">
+                <button onclick="downloadReport()" class="bg-green-500 text-white px-6 py-3 rounded-lg text-lg hover:bg-green-600 transition">
+                    Download Report
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let userData = null;
+        let isLoggedIn = false;
+
+        function showLoginModal() {
+            // Simulating login
+            userData = {
+                name: "Test User",
+                email: "test@example.com"
+            };
+            isLoggedIn = true;
+            updateUI();
+        }
+
+        function showRegisterModal() {
+            // Simulating registration
+            userData = {
+                name: "New User",
+                email: "new@example.com"
+            };
+            isLoggedIn = true;
+            updateUI();
+        }
+
+        function updateUI() {
+            const userSection = document.getElementById('userSection');
+            if (isLoggedIn) {
+                userSection.innerHTML = `
+                    <span class="text-gray-600">${userData.name}</span>
+                    <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded">Logout</button>
+                `;
+            }
+        }
+
+        function logout() {
+            userData = null;
+            isLoggedIn = false;
+            location.reload();
+        }
+
+        function startScan() {
+            if (!isLoggedIn) {
+                alert("Please login first");
+                return;
+            }
+            document.querySelector('.scanner-overlay').style.display = 'flex';
+            setTimeout(() => {
+                document.querySelector('.scanner-overlay').style.display = 'none';
+                document.querySelector('.loading').style.display = 'flex';
+                setTimeout(() => {
+                    document.querySelector('.loading').style.display = 'none';
+                    showResults();
+                }, 2000);
+            }, 3000);
+        }
+
+        function closeScanner() {
+            document.querySelector('.scanner-overlay').style.display = 'none';
+        }
+
+        function showResults() {
+            document.getElementById('welcomeSection').classList.add('hidden');
+            document.getElementById('resultSection').classList.remove('hidden');
+
+            // Create chart
+            const ctx = document.getElementById('intelligenceChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Logical', 'Linguistic', 'Musical', 'Spatial', 'Bodily-Kinesthetic', 'Interpersonal', 'Intrapersonal', 'Naturalistic'],
+                    datasets: [{
+                        label: 'Intelligence Scores',
+                        data: [8, 6, 7, 9, 5, 8, 7, 6],
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 10
+                        }
+                    }
+                }
+            });
+
+            // Populate recommendations
+            document.getElementById('careerRecommendations').innerHTML = `
+                <div class="p-3 bg-blue-50 rounded">
+                    <p class="font-semibold">Software Developer</p>
+                    <p class="text-sm text-gray-600">Match: 95%</p>
+                </div>
+                <div class="p-3 bg-blue-50 rounded">
+                    <p class="font-semibold">Data Scientist</p>
+                    <p class="text-sm text-gray-600">Match: 90%</p>
+                </div>
+                <div class="p-3 bg-blue-50 rounded">
+                    <p class="font-semibold">Research Analyst</p>
+                    <p class="text-sm text-gray-600">Match: 85%</p>
+                </div>
+            `;
+
+            document.getElementById('learningStyle').innerHTML = `
+                <div class="p-3 bg-green-50 rounded">
+                    <p class="font-semibold">Primary Style: Visual</p>
+                    <p class="text-sm text-gray-600">You learn best through visual aids and demonstrations</p>
+                </div>
+                <div class="mt-4">
+                    <h4 class="font-semibold mb-2">Recommendations:</h4>
+                    <ul class="list-disc pl-5 text-gray-600">
+                        <li>Use mind maps for studying</li>
+                        <li>Watch educational videos</li>
+                        <li>Create diagrams and charts</li>
+                    </ul>
+                </div>
+            `;
+        }
+
+        function downloadReport() {
+            alert("Report download started...");
+        }
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
